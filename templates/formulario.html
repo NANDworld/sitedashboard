@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if acao == 'cadastrar' %}Novo Produto{% else %}Editar Produto{% endif %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>📦 Sistema de Cadastro de Produtos</h1>
+            <nav class="nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('listar_produtos') }}" class="nav-link">Produtos</a>
+                <a href="{{ url_for('novo_produto') }}" class="nav-link btn-primary">+ Novo Produto</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <div class="page-header">
+            <h2>{% if acao == 'cadastrar' %}Cadastrar Novo Produto{% else %}Editar Produto{% endif %}</h2>
+            <a href="{{ url_for('listar_produtos') }}" class="btn btn-outline">← Voltar para Lista</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-container">
+            <form method="POST" action="{% if acao == 'cadastrar' %}{{ url_for('novo_produto') }}{% else %}{{ url_for('editar_produto', id=produto['id']) }}{% endif %}" class="product-form">
+                
+                <div class="form-group">
+                    <label for="nome">Nome do Produto *</label>
+                    <input type="text" id="nome" name="nome" required 
+                           value="{{ produto['nome'] if produto else '' }}"
+                           placeholder="Digite o nome do produto">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoria">Categoria *</label>
+                        <input type="text" id="categoria" name="categoria" required 
+                               value="{{ produto['categoria'] if produto else '' }}"
+                               placeholder="Ex: Eletrônicos, Alimentos, etc.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fornecedor">Fornecedor *</label>
+                        <input type="text" id="fornecedor" name="fornecedor" required 
+                               value="{{ produto['fornecedor'] if produto else '' }}"
+                               placeholder="Nome do fornecedor">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="preco">Preço (R$) *</label>
+                        <input type="number" id="preco" name="preco" step="0.01" min="0.01" required 
+                               value="{{ produto['preco'] if produto else '' }}"
+                               placeholder="0,00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade em Estoque *</label>
+                        <input type="number" id="quantidade" name="quantidade" min="0" required 
+                               value="{{ produto['quantidade'] if produto else '' }}"
+                               placeholder="0">
+                        {% if produto and produto['quantidade'] <= 10 %}
+                        <span class="input-hint">⚠️ Estoque baixo!</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        {% if acao == 'cadastrar' %}Cadastrar Produto{% else %}Salvar Alterações{% endif %}
+                    </button>
+                    <a href="{{ url_for('listar_produtos') }}" class="btn btn-secondary btn-lg">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Sistema de Cadastro de Produtos. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

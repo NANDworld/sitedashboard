@@ -1,0 +1,12 @@
+# Ponytail Configuration
+# Lazy senior dev mode for AI agents
+
+[general]
+mode = senior_dev
+auto_fix = true
+code_review = true
+
+[hooks]
+enable_copilot = true
+enable_cursor = true
+enable_claude = true

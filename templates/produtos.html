@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - Sistema de Produtos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>📦 Sistema de Cadastro de Produtos</h1>
+            <nav class="nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('listar_produtos') }}" class="nav-link active">Produtos</a>
+                <a href="{{ url_for('novo_produto') }}" class="nav-link btn-primary">+ Novo Produto</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <div class="page-header">
+            <h2>Gerenciamento de Produtos</h2>
+            <a href="{{ url_for('novo_produto') }}" class="btn btn-primary">+ Novo Produto</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="search-bar">
+            <form method="GET" action="{{ url_for('listar_produtos') }}" class="search-form">
+                <input type="text" name="pesquisa" placeholder="Pesquisar por nome, categoria ou fornecedor..." 
+                       value="{{ termo_pesquisa }}" class="search-input">
+                <button type="submit" class="btn btn-secondary">Pesquisar</button>
+                {% if termo_pesquisa %}
+                <a href="{{ url_for('listar_produtos') }}" class="btn btn-outline">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if produtos %}
+        <!-- Versão Mobile (cards) -->
+        <div class="table-mobile">
+            {% for produto in produtos %}
+            <div class="mobile-card {% if produto['quantidade'] <= 10 %}low-stock{% endif %}">
+                <div class="mobile-row">
+                    <span class="mobile-label">Nome</span>
+                    <span class="mobile-value">{{ produto['nome'] }}</span>
+                </div>
+                <div class="mobile-row">
+                    <span class="mobile-label">Categoria</span>
+                    <span class="mobile-value">{{ produto['categoria'] }}</span>
+                </div>
+                <div class="mobile-row">
+                    <span class="mobile-label">Preço</span>
+                    <span class="mobile-value">R$ {{ "%.2f"|format(produto['preco']) }}</span>
+                </div>
+                <div class="mobile-row">
+                    <span class="mobile-label">Quantidade</span>
+                    <span class="mobile-value">{{ produto['quantidade'] }}</span>
+                </div>
+                <div class="mobile-row">
+                    <span class="mobile-label">Fornecedor</span>
+                    <span class="mobile-value">{{ produto['fornecedor'] }}</span>
+                </div>
+                <div class="mobile-row">
+                    <span class="mobile-label">Status</span>
+                    <span class="mobile-value">
+                        {% if produto['quantidade'] <= 10 %}
+                            <span class="badge badge-warning">Estoque Baixo</span>
+                        {% else %}
+                            <span class="badge badge-success">Em Estoque</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="mobile-actions">
+                    <a href="{{ url_for('editar_produto', id=produto['id']) }}" 
+                       class="btn btn-sm btn-edit">✏️ Editar</a>
+                    <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" 
+                          class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
+                        <button type="submit" class="btn btn-sm btn-delete">🗑️ Excluir</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Versão Desktop (tabela) -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Preço</th>
+                        <th>Quantidade</th>
+                        <th>Fornecedor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr class="{% if produto['quantidade'] <= 10 %}row-low-stock{% endif %}">
+                        <td>{{ produto['id'] }}</td>
+                        <td>{{ produto['nome'] }}</td>
+                        <td>{{ produto['categoria'] }}</td>
+                        <td>R$ {{ "%.2f"|format(produto['preco']) }}</td>
+                        <td>{{ produto['quantidade'] }}</td>
+                        <td>{{ produto['fornecedor'] }}</td>
+                        <td>
+                            {% if produto['quantidade'] <= 10 %}
+                                <span class="badge badge-warning">Estoque Baixo</span>
+                            {% else %}
+                                <span class="badge badge-success">Em Estoque</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a href="{{ url_for('editar_produto', id=produto['id']) }}" 
+                               class="btn btn-sm btn-edit" title="Editar">✏️</a>
+                            <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" 
+                                  class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
+                                <button type="submit" class="btn btn-sm btn-delete" title="Excluir">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>📭 Nenhum produto encontrado.</p>
+            <a href="{{ url_for('novo_produto') }}" class="btn btn-primary">Cadastrar Primeiro Produto</a>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Sistema de Cadastro de Produtos. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
