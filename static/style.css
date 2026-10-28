@@ -135,6 +135,7 @@ body {
 .card-green .card-icon { background: #dcfce7; }
 .card-purple .card-icon { background: #ede9fe; }
 .card-red .card-icon { background: #fee2e2; }
+.card-orange .card-icon { background: #ffedd5; }
 
 .card-content h3 {
     font-size: 0.8rem;

@@ -66,6 +66,15 @@
                     <p class="card-description">produtos com estoque baixo</p>
                 </div>
             </div>
+
+            <div class="card card-orange">
+                <div class="card-icon">🗑️</div>
+                <div class="card-content">
+                    <h3>Produtos Vencidos</h3>
+                    <p class="card-value">{{ produtos_vencidos }}</p>
+                    <p class="card-description">produtos com validade vencida</p>
+                </div>
+            </div>
         </div>
 
         {% if produtos_baixo %}
@@ -75,6 +84,18 @@
             <ul>
                 {% for prod in produtos_baixo %}
                 <li>{{ prod['nome'] }} - {{ prod['quantidade'] }} unidades</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if produtos_vencidos_list %}
+        <div class="alert alert-error">
+            <h4>🗑️ Produtos Vencidos</h4>
+            <p>Os seguintes produtos estão com validade vencida:</p>
+            <ul>
+                {% for prod in produtos_vencidos_list %}
+                <li>{{ prod['nome'] }} - Venceu em: {{ prod['validade'] }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -94,21 +115,24 @@
             </div>
         </div>
 
-    <!-- Gráficos com Lazy Loading -->
-    <section class="charts-section" id="charts">
-        <h2>📊 Análise de Dados</h2>
-        <div class="charts-grid">
-            <div class="chart-card lazy-chart" data-chart="categoria">
-                <h3>Distribuição por Categoria</h3>
-                <canvas id="chart-categoria"></canvas>
+        <!-- Gráficos com Lazy Loading -->
+        <section class="charts-section" id="charts">
+            <h2>📊 Análise de Dados</h2>
+            <div class="charts-grid">
+                <div class="chart-card lazy-chart" data-chart="categoria">
+                    <h3>Distribuição por Categoria</h3>
+                    <canvas id="chart-categoria"></canvas>
+                </div>
+                <div class="chart-card lazy-chart" data-chart="vendas">
+                    <h3>Top 5 Mais Vendidos</h3>
+                    <canvas id="chart-vendas"></canvas>
+                </div>
+                <div class="chart-card lazy-chart" data-chart="vendas_categoria">
+                    <h3>Vendas por Categoria</h3>
+                    <canvas id="chart-vendas-categoria"></canvas>
+                </div>
             </div>
-            <div class="chart-card lazy-chart" data-chart="fornecedor">
-                <h3>Top Fornecedores</h3>
-                <canvas id="chart-fornecedor"></canvas>
-            </div>
-        </div>
-    </section>
-
+        </section>
     </main>
 
     <footer class="footer">
@@ -118,90 +142,73 @@
     </footer>
 
     {% if categoria_stats %}
-<script>
-// Dados dos gráficos vindos do backend
-window.chartData = {
-    categorias: {{ categoria_stats | map(attribute='categoria') | list | tojson }},
-    quantidades: {{ categoria_stats | map(attribute='total') | list | tojson }},
-    fornecedores: {{ fornecedor_stats | map(attribute='fornecedor') | list | tojson }},
-    valores: {{ fornecedor_stats | map(attribute='total') | list | tojson }}
-};
-</script>
-{% endif %}
+    <script>
+    window.chartData = {
+        categorias: {{ categoria_stats | map(attribute='categoria') | list | tojson }},
+        quantidades: {{ categoria_stats | map(attribute='total') | list | tojson }},
+        top_vendidos: {{ top_vendidos | map(attribute='nome') | list | tojson }},
+        vendas_valores: {{ top_vendidos | map(attribute='vendido') | list | tojson }},
+        vendas_cat: {{ vendas_categoria | map(attribute='categoria') | list | tojson }},
+        cat_vendas: {{ vendas_categoria | map(attribute='total_vendas') | list | tojson }}
+    };
+    </script>
+    {% endif %}
 
-<script>
-// Lazy loading para gráficos - só carrega quando visíveis
-document.addEventListener('DOMContentLoaded', function() {
-    const lazyCharts = document.querySelectorAll('.lazy-chart');
-    
-    if ('IntersectionObserver' in window) {
-        const chartObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const chartType = entry.target.dataset.chart;
-                    initChart(chartType);
-                    entry.target.classList.add('loaded');
-                    chartObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.1 });
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lazyCharts = document.querySelectorAll('.lazy-chart');
         
-        lazyCharts.forEach(chart => chartObserver.observe(chart));
-    } else {
-        lazyCharts.forEach(chart => initChart(chart.dataset.chart));
-    }
-});
-
-function initChart(type) {
-    if (typeof Chart === 'undefined') return;
+        if ('IntersectionObserver' in window) {
+            const chartObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const chartType = entry.target.dataset.chart;
+                        initChart(chartType);
+                        entry.target.classList.add('loaded');
+                        chartObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            lazyCharts.forEach(chart => chartObserver.observe(chart));
+        } else {
+            lazyCharts.forEach(chart => initChart(chart.dataset.chart));
+        }
+    });
     
-    const ctx = document.getElementById('chart-' + type)?.getContext('2d');
-    if (!ctx) return;
-    
-    const data = window.chartData;
-    
-    if (type === 'categoria' && data.categorias && data.categorias.length > 0) {
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: data.categorias,
-                datasets: [{
-                    data: data.quantidades,
-                    backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    } else if (type === 'fornecedor' && data.fornecedores && data.fornecedores.length > 0) {
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.fornecedores,
-                datasets: [{
-                    label: 'Total Produtos',
-                    data: data.valores,
-                    backgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
+    function initChart(type) {
+        if (typeof Chart === 'undefined') return;
+        const data = window.chartData;
+        
+        if (type === 'categoria' && data.categorias?.length > 0) {
+            new Chart(document.getElementById('chart-categoria'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.categorias,
+                    datasets: [{ data: data.quantidades, backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'] }]
                 },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        } else if (type === 'vendas' && data.top_vendidos?.length > 0) {
+            new Chart(document.getElementById('chart-vendas'), {
+                type: 'bar',
+                data: {
+                    labels: data.top_vendidos,
+                    datasets: [{ label: 'Qtd Vendida', data: data.vendas_valores, backgroundColor: '#22c55e' }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        } else if (type === 'vendas_categoria' && data.vendas_cat?.length > 0) {
+            new Chart(document.getElementById('chart-vendas-categoria'), {
+                type: 'pie',
+                data: {
+                    labels: data.vendas_cat,
+                    datasets: [{ data: data.cat_vendas, backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'] }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
     }
-}
-</script>
-
-
+    </script>
 </body>
 </html>

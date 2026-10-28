@@ -1,8 +1,9 @@
 -- Script de Criação do Banco de Dados SQLite
--- Sistema de Cadastro de Produtos
+-- Sistema de Cadastro de Produtos - Filial Norte
+-- Banco: dbfilialnorte.db
 
 -- Conectar ao banco de dados
--- sqlite3 produtos.db
+-- sqlite3 dbfilialnorte.db
 
 -- Criar a tabela de produtos
 CREATE TABLE IF NOT EXISTS produtos (
@@ -12,36 +13,28 @@ CREATE TABLE IF NOT EXISTS produtos (
     preco REAL NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 0,
     fornecedor TEXT NOT NULL,
+    validade DATE,
+    vendido INTEGER NOT NULL DEFAULT 0,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Índices para melhorar performance das pesquisas
+-- Índices para melhorar performance
 CREATE INDEX IF NOT EXISTS idx_nome ON produtos(nome);
 CREATE INDEX IF NOT EXISTS idx_categoria ON produtos(categoria);
 CREATE INDEX IF NOT EXISTS idx_fornecedor ON produtos(fornecedor);
+CREATE INDEX IF NOT EXISTS idx_validade ON produtos(validade);
+CREATE INDEX IF NOT EXISTS idx_vendido ON produtos(vendido);
 
--- Visualizar todas as tabelas
--- .tables
-
--- Visualizar estrutura da tabela
--- .schema produtos
-
--- Consultar todos os produtos
--- SELECT * FROM produtos;
-
--- Consultar produtos com estoque baixo
--- SELECT * FROM produtos WHERE quantidade <= 10;
-
--- Consultar total de produtos
+-- Consultas úteis
+-- Total de produtos
 -- SELECT COUNT(*) as total FROM produtos;
 
--- Consultar total em estoque
--- SELECT SUM(quantidade) as total_unidades FROM produtos;
+-- Produtos vencidos
+-- SELECT * FROM produtos WHERE validade < date('now');
 
--- Consultar valor total do estoque
+-- Top 5 mais vendidos
+-- SELECT nome, vendido FROM produtos ORDER BY vendido DESC LIMIT 5;
+
+-- Valor total do estoque
 -- SELECT SUM(preco * quantidade) as valor_total FROM produtos;
-
--- Consultar produtos por categoria
--- SELECT categoria, COUNT(*) as quantidade, SUM(quantidade) as unidades 
--- FROM produtos GROUP BY categoria ORDER BY categoria;

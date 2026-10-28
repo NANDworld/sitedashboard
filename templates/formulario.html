@@ -77,6 +77,15 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="validade">Data de Validade</label>
+                        <input type="date" id="validade" name="validade" 
+                               value="{{ produto['validade'] if produto and produto['validade'] else '' }}">
+                        <span class="input-hint">Formato: AAAA-MM-DD (opcional)</span>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-lg">
                         {% if acao == 'cadastrar' %}Cadastrar Produto{% else %}Salvar Alterações{% endif %}

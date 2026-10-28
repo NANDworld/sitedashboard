@@ -69,6 +69,10 @@
                     <span class="mobile-value">{{ produto['fornecedor'] }}</span>
                 </div>
                 <div class="mobile-row">
+                    <span class="mobile-label">Validade</span>
+                    <span class="mobile-value">{{ produto['validade'] or 'N/A' }}</span>
+                </div>
+                <div class="mobile-row">
                     <span class="mobile-label">Status</span>
                     <span class="mobile-value">
                         {% if produto['quantidade'] <= 10 %}
@@ -79,10 +83,8 @@
                     </span>
                 </div>
                 <div class="mobile-actions">
-                    <a href="{{ url_for('editar_produto', id=produto['id']) }}" 
-                       class="btn btn-sm btn-edit">✏️ Editar</a>
-                    <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" 
-                          class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
+                    <a href="{{ url_for('editar_produto', id=produto['id']) }}" class="btn btn-sm btn-edit">✏️ Editar</a>
+                    <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
                         <button type="submit" class="btn btn-sm btn-delete">🗑️ Excluir</button>
                     </form>
                 </div>
@@ -101,6 +103,7 @@
                         <th>Preço</th>
                         <th>Quantidade</th>
                         <th>Fornecedor</th>
+                        <th>Validade</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -115,6 +118,17 @@
                         <td>{{ produto['quantidade'] }}</td>
                         <td>{{ produto['fornecedor'] }}</td>
                         <td>
+                            {% if produto['validade'] %}
+                                {% if produto['validade'] < hoje %}
+                                    <span class="badge badge-warning">Vencido</span>
+                                {% else %}
+                                    {{ produto['validade'] }}
+                                {% endif %}
+                            {% else %}
+                                <span class="badge badge-success">Sem validade</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             {% if produto['quantidade'] <= 10 %}
                                 <span class="badge badge-warning">Estoque Baixo</span>
                             {% else %}
@@ -122,10 +136,8 @@
                             {% endif %}
                         </td>
                         <td class="actions">
-                            <a href="{{ url_for('editar_produto', id=produto['id']) }}" 
-                               class="btn btn-sm btn-edit" title="Editar">✏️</a>
-                            <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" 
-                                  class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
+                            <a href="{{ url_for('editar_produto', id=produto['id']) }}" class="btn btn-sm btn-edit" title="Editar">✏️</a>
+                            <form method="POST" action="{{ url_for('excluir_produto', id=produto['id']) }}" class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir este produto?')">
                                 <button type="submit" class="btn btn-sm btn-delete" title="Excluir">🗑️</button>
                             </form>
                         </td>
